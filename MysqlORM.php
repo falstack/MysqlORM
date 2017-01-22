@@ -1,6 +1,6 @@
 <?php
 
-class DB
+class MysqlORM
 {
     private $sql;
     private $select;
@@ -11,8 +11,6 @@ class DB
     private $sort;
     private $query;
 
-    // TODO: TABLE JOIN
-    // TODO: WHERE IN
     public function __construct()
     {
         // mysql connect
@@ -20,7 +18,9 @@ class DB
 
     private function init() {
         $this->sql = [
+            'join' => '',
             'where' => '',
+            'group' => '',
             'order' => '',
             'limit' => '',
             'offset' => ''
@@ -41,7 +41,7 @@ class DB
         return $this;
     }
 
-    public function order($order, $sort = 'DESC') {
+    public function orderBy($order, $sort = 'DESC') {
         $this->order = $order;
         $this->sort = $sort;
         return $this;
@@ -58,30 +58,55 @@ class DB
         return $this;
     }
 
+    // TODO: GroupBy
+    public function groupBy()
+    {
+
+    }
+
+    // TODO: TABLE JOIN
+    public function join()
+    {
+
+    }
+
     public function where($arg1, $arg2, $arg3 = null)
     {
-        // TODO: 目前一条语句只支持一个 where 或 whereRaw
         if ($arg3 === null)
         {
-            $this->sql['where'] = "WHERE $arg1 = " . $this->transformType($arg2);
+            $this->sql['where'] = $this->mergeWhere("$arg1 = " . $this->transformType($arg2));
         }
         else
         {
-            $this->sql['where'] = "WHERE $arg1 $arg2 " . $this->transformType($arg3);
+            $this->sql['where'] = $this->mergeWhere("$arg1 $arg2 " . $this->transformType($arg3));
         }
+        return $this;
+    }
+
+    public function whereIn($arg1, $arg2)
+    {
+        if (gettype($arg2) !== 'array')
+        {
+            // TODO: throw a error
+        }
+
+        $this->sql['where'] = $this->mergeWhere("$arg1 IN (". "'" . implode("', '", $arg2) . "'" .")");
+
         return $this;
     }
 
     public function whereRaw($key, $val = [])
     {
-        // TODO: 参数类型校验
-        // TODO: 目前一条语句只支持一个 where 或 whereRaw
+        if (gettype($val) !== 'array')
+        {
+            // TODO: throw a error
+        }
+
         $key = str_replace(' ', '', $key);
         if (count($val) !== substr_count($key, '?'))
         {
             // 缺省个数和参数个数不等
             // TODO: throw a error
-            return $this;
         }
 
         $i = 0;
@@ -102,7 +127,7 @@ class DB
             $arr[] = $todo;
         }
 
-        $this->sql['where'] = 'WHERE ' . implode(' AND ', $arr);
+        $this->sql['where'] = $this->mergeWhere(implode(' AND ', $arr));
 
         return $this;
     }
@@ -121,6 +146,8 @@ class DB
 
         $this->query = "INSERT INTO $this->table ($keys) VALUES ($vals)";
 
+        return $this->query;
+
         mysql_query($this->query);
         return mysql_insert_id();
     }
@@ -128,6 +155,8 @@ class DB
     public function delete()
     {
         $this->query = "DELETE FROM $this->table " . $this->StringSQL();
+
+        return $this->query;
 
         return mysql_query($this->query);
     }
@@ -144,6 +173,8 @@ class DB
         $str = rtrim($str, ',');
 
         $this->query = "UPDATE $this->table SET $str " . $this->StringSQL();
+
+        return $this->query;
 
         return mysql_query($this->query);
     }
@@ -173,6 +204,8 @@ class DB
 
         $this->query = "SELECT $this->select FROM $this->table " . $this->StringSQL();
 
+        return $this->query;
+
         $result = mysql_query($this->query);
 
         if (!$result)
@@ -195,6 +228,18 @@ class DB
         return $data;
     }
 
+    private function mergeWhere($sql)
+    {
+        if (empty($this->sql['where']))
+        {
+            return 'WHERE ' . $sql;
+        }
+        else
+        {
+            return 'WHERE ' . $sql . str_replace('WHERE', ' AND', $this->sql['where']);
+        }
+    }
+
     private function StringSQL()
     {
         return (implode(' ', $this->sql));
@@ -215,5 +260,3 @@ class DB
         // make some log & close DB
     }
 }
-
-$query = new DB();
