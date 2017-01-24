@@ -190,6 +190,26 @@ class MysqlORM
 
         $this->query = "SELECT $this->select FROM $this->table " . $this->StringSQL();
 
+        return $this->query;
+
+        $result = mysql_query($this->query);
+
+        if (!$result)
+        {
+            return false;
+        }
+
+        return mysql_fetch_array($result, MYSQL_ASSOC)['num'];
+    }
+
+    public function sum($arg)
+    {
+        $this->select = "SUM($arg) as num";
+
+        $this->query = "SELECT $this->select FROM $this->table " . $this->StringSQL();
+
+        return $this->query;
+
         $result = mysql_query($this->query);
 
         if (!$result)

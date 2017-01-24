@@ -12,3 +12,9 @@ echo $users = $query->table('users')
     ->orderBy('create_time')
     ->skip(20)
     ->get(10);
+
+echo '<br/>';
+
+echo $money = $query->table('t_reward_promo')
+                    ->where('state', 2)
+                    ->sum('amount');
