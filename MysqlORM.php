@@ -184,6 +184,22 @@ class MysqlORM
         return $this->get(null, false);
     }
 
+    public function count()
+    {
+        $this->select = 'COUNT(1) as num';
+
+        $this->query = "SELECT $this->select FROM $this->table " . $this->StringSQL();
+
+        $result = mysql_query($this->query);
+
+        if (!$result)
+        {
+            return false;
+        }
+
+        return mysql_fetch_array($result, MYSQL_ASSOC)['num'];
+    }
+
     public function get($limit = null, $isArr = true)
     {
         if (!is_null($limit))
