@@ -18,7 +18,7 @@ class MysqlORM
 
     private function init() {
         $this->sql = [
-            'join' => '',
+            'leftJoin' => '',
             'where' => '',
             'group' => '',
             'order' => '',
@@ -58,16 +58,16 @@ class MysqlORM
         return $this;
     }
 
-    // TODO: GroupBy
-    public function groupBy()
+    public function groupBy($arg)
     {
-
+        $this->sql['group'] = "GROUP BY $arg";
+        return $this;
     }
 
-    // TODO: TABLE JOIN
-    public function join()
+    public function leftJoin($arg1, $arg2, $arg3, $arg4)
     {
-
+        $this->sql['leftJoin'] .= " LEFT JOIN $arg1 ON $arg2 $arg3 $arg4";
+        return $this;
     }
 
     public function where($arg1, $arg2, $arg3 = null)

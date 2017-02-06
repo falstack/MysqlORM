@@ -18,3 +18,12 @@ echo '<br/>';
 echo $money = $query->table('t_reward_promo')
                     ->where('state', 2)
                     ->sum('amount');
+
+echo '<br/>';
+
+echo $group = $query->table('column')
+                    ->where('state', 2)
+                    ->leftJoin('users', 'users.id', '=', 'column.user_id')
+                    ->leftJoin('article', 'article.user_id', '=', 'column_user_id')
+                    ->groupBy('article.id')
+                    ->get();
